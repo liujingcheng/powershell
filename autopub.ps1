@@ -30,8 +30,26 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
         }
     }
 
-    $srcs = Get-ChildItem -Path $tempSrcPath -Recurse -Include *.java  | ForEach-Object {$_.FullName.Replace($tempSrcPath, "")}
-    $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "")}
+    $srcs = Get-ChildItem -Path $tempSrcPath -Recurse -Include *.java  | ForEach-Object {$_.FullName.Replace($tempSrcPath, "").Replace(".java", "")}
+    $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
+    $srcs.Length
+    $classes.Length
+
+    $missedPaths = New-Object -TypeName System.Collections.ArrayList
+    foreach ($src in $srcs) {
+        if (!$classes.Contains($src)) {
+            $dirPath = $src.Substring(0, $src.LastIndexOf('\'))
+            if (!$missedPaths.Contains($dirPath)) {
+                $missedPaths.Add($dirPath)
+                $srcFilePath = $tempSrcPath + $dirPath + "\*.java"
+                $srcFilePath
+                javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $srcFilePath
+            }
+        }
+    }
+    
+    $srcs = Get-ChildItem -Path $tempSrcPath -Recurse -Include *.java  | ForEach-Object {$_.FullName.Replace($tempSrcPath, "").Replace(".java", "")}
+    $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
     $srcs.Length
     $classes.Length
     foreach ($src in $srcs) {
