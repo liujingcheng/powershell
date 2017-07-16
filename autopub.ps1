@@ -14,22 +14,6 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
     $firstSrcFile = $tempSrcPath + "\com\canyou\CanYouConfig.java";
     javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $firstSrcFile
 
-    $srcs = Get-ChildItem -Path $tempSrcPath -Recurse -Directory  | ForEach-Object {$_.FullName.Replace($tempSrcPath, "")}
-    $classes = Get-ChildItem -Path $classpath  -Recurse  -Directory | ForEach-Object {$_.FullName.Replace($classpath, "")}
-
-    $srcs.Length
-    $classes.Length
-    $counter = 0
-    foreach ($src in $srcs) {
-        if (!$classes.Contains($src)) {
-            $counter++
-            $counter
-            $src
-            $srcFilePath = $tempSrcPath + $src + "\*.java"
-            javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $srcFilePath
-        }
-    }
-
     $srcs = Get-ChildItem -Path $tempSrcPath -Recurse -Include *.java  | ForEach-Object {$_.FullName.Replace($tempSrcPath, "").Replace(".java", "")}
     $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
     $srcs.Length
@@ -57,6 +41,8 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
             $src
         }
     }
+
+    Remove-Variable srcs, classes, missedPaths
 }
 
 RemoveApiTarget D:\autopub\source\slerp_api\target\classes
