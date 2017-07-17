@@ -6,7 +6,8 @@ Function RemoveApiTarget([string] $classpath) {
     }
 }
 
-Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
+Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [string]$logFile) {
+    Remove-Item -Path $logFile -Force
     D:\autopub\rm-utf-bom\RemoveUtfBom.exe $srcpath
 
     $tempSrcPath = $srcpath.Replace("\src", "\temp")
@@ -18,6 +19,8 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
     $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
     $srcs.Length
     $classes.Length
+    $srcs.Length | Out-File -FilePath $logFile -Append
+    $classes.Length | Out-File -FilePath $logFile -Append
 
     $missedPaths = New-Object -TypeName System.Collections.ArrayList
     foreach ($src in $srcs) {
@@ -27,6 +30,7 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
                 $missedPaths.Add($dirPath)
                 $srcFilePath = $tempSrcPath + $dirPath + "\*.java"
                 $srcFilePath
+                $srcFilePath | Out-File -FilePath $logFile -Append
                 javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $srcFilePath
             }
         }
@@ -36,16 +40,20 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
     $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
     $srcs.Length
     $classes.Length
+    $srcs.Length | Out-File -FilePath $logFile -Append
+    $classes.Length | Out-File -FilePath $logFile -Append
     foreach ($src in $srcs) {
         if (!$classes.Contains($src)) {
             $src
+            $src | Out-File -FilePath $logFile -Append
         }
     }
-
+    Remove-Item -Path $tempSrcPath -Recurse -Force
     Remove-Variable srcs, classes, missedPaths
 }
 
-RemoveApiTarget D:\autopub\source\slerp_api\target\classes
-BuildApi D:\autopub\source\slerp_api\src D:\autopub\source\slerp_api\target\classes D:\autopub\lib
+$configs = Get-Content -Path D:\autopub\pub.config
+RemoveApiTarget $configs[0]
+BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
 
 
