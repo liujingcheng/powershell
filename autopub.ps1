@@ -51,9 +51,22 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
     Remove-Item -Path $tempSrcPath -Recurse -Force
     Remove-Variable srcs, classes, missedPaths
 }
+Function PullApi([string] $gitPath, [string] $gitBranch) {
+    $originBranch = "origin/" + $gitBranch
+    $gitPath
+    Set-Location -Path $gitPath
+    git reset --hard head
+    git fetch origin $gitBranch
+    git checkout  $originBranch
+}
+
+Function AddLicenses($licensePath,$destPath1,$destPath2){
+    Get-Content -Path $licensePath
+}
 
 $configs = Get-Content -Path D:\autopub\pub.config
-RemoveApiTarget $configs[0]
-BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
+PullApi $configs[4] $configs[5]
+#RemoveApiTarget $configs[0]
+#BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
 
 
