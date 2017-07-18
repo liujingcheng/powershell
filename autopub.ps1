@@ -61,11 +61,14 @@ Function PullApi([string] $gitPath, [string] $gitBranch) {
 }
 
 Function AddLicenses($licensePath,$destPath1,$destPath2){
-    Get-Content -Path $licensePath
+    $licenseContent=Get-Content -Path $licensePath
+    $licenseContent | Out-File -FilePath $destPath1 -Append -Encoding ascii
+    $licenseContent | Out-File -FilePath $destPath2 -Append -Encoding ascii
 }
 
 $configs = Get-Content -Path D:\autopub\pub.config
-PullApi $configs[4] $configs[5]
+AddLicenses $configs[6] $configs[7] $configs[8]
+#PullApi $configs[4] $configs[5]
 #RemoveApiTarget $configs[0]
 #BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
 
