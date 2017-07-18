@@ -19,7 +19,7 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
     $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
     $srcs.Length
     $classes.Length
-    $srcs.Length | Out-File -FilePath $logFile -Append
+    $srcs.Length | Out-File -FilePath $logFile
     $classes.Length | Out-File -FilePath $logFile -Append
 
     $missedPaths = New-Object -TypeName System.Collections.ArrayList
@@ -51,24 +51,35 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
     Remove-Item -Path $tempSrcPath -Recurse -Force
     Remove-Variable srcs, classes, missedPaths
 }
-Function PullApi([string] $gitPath, [string] $gitBranch) {
+Function GitPull([string] $apiGitPath, [string] $wpfGitPath, [string] $gitBranch) {
     $originBranch = "origin/" + $gitBranch
-    $gitPath
-    Set-Location -Path $gitPath
+    Set-Location -Path $apiGitPath
+    git reset --hard head
+    git fetch origin $gitBranch
+    git checkout  $originBranch
+
+    $originBranch = "origin/" + $gitBranch
+    Set-Location -Path $wpfGitPath
     git reset --hard head
     git fetch origin $gitBranch
     git checkout  $originBranch
 }
 
-Function AddLicenses($licensePath,$destPath1,$destPath2){
-    $licenseContent=Get-Content -Path $licensePath
+Function AddLicenses($licensePath, $destPath1, $destPath2) {
+    $licenseContent = Get-Content -Path $licensePath
     $licenseContent | Out-File -FilePath $destPath1 -Append -Encoding ascii
     $licenseContent | Out-File -FilePath $destPath2 -Append -Encoding ascii
 }
 
+Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
+    $buildParams = ' /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"'
+    $msBuildPath + ' ' + $slnPath + $buildParams
+}
+
 $configs = Get-Content -Path D:\autopub\pub.config
-AddLicenses $configs[6] $configs[7] $configs[8]
-#PullApi $configs[4] $configs[5]
+#GitPull $configs[4] $configs[9] $configs[5]
+#AddLicenses $configs[6] $configs[7] $configs[8]
+BuildWpf $configs[10] $configs[11]
 #RemoveApiTarget $configs[0]
 #BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
 
