@@ -76,8 +76,10 @@ Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
     C:\"Program Files (x86)\MSBuild"\12.0\Bin\MSBuild.exe  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"
 }
 
-Function Publish($ip, $serviceName) {
+Function Publish($ip, $serviceName,$wpfAutoPubExePath) {
     Restart-Service -InputObject $(Get-Service -Computer $ip -Name $serviceName)
+    #Invoke-Item -Path $wpfAutoPubExePath
+    D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe
 }
 
 $configs = Get-Content -Path D:\autopub\pub.config
@@ -86,5 +88,5 @@ $configs = Get-Content -Path D:\autopub\pub.config
 #BuildWpf $configs[10] $configs[11]
 #RemoveApiTarget $configs[0]
 #BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
-Publish 192.168.10.186 ApiPreview
+Publish 192.168.10.186 ApiPreview $configs[12]
 
