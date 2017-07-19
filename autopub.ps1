@@ -72,14 +72,19 @@ Function AddLicenses($licensePath, $destPath1, $destPath2) {
 }
 
 Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
+    #Invoke-Item -Path $msBuildPath 
     C:\"Program Files (x86)\MSBuild"\12.0\Bin\MSBuild.exe  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"
+}
+
+Function Publish($ip, $serviceName) {
+    Restart-Service -InputObject $(Get-Service -Computer $ip -Name $serviceName)
 }
 
 $configs = Get-Content -Path D:\autopub\pub.config
 #GitPull $configs[4] $configs[9] $configs[5]
 #AddLicenses $configs[6] $configs[7] $configs[8]
-BuildWpf $configs[10] $configs[11]
+#BuildWpf $configs[10] $configs[11]
 #RemoveApiTarget $configs[0]
 #BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
-
+Publish 192.168.10.186 ApiPreview
 
