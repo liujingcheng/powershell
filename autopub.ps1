@@ -73,13 +73,21 @@ Function AddLicenses($licensePath, $destPath1, $destPath2) {
 
 Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
     #Invoke-Item -Path $msBuildPath 
+    #$command = $msBuildPath + " " + $slnPath + ' /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"'
+    #Invoke-Command -FilePath D:\autopub\build-wpf.ps1
     C:\"Program Files (x86)\MSBuild"\12.0\Bin\MSBuild.exe  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"
 }
 
-Function Publish($ip, $serviceName,$wpfAutoPubExePath) {
-    Restart-Service -InputObject $(Get-Service -Computer $ip -Name $serviceName)
-    #Invoke-Item -Path $wpfAutoPubExePath
-    D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe
+Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [string] $wpfRemotePath) {
+    #Restart-Service -InputObject $(Get-Service -Computer $ip -Name $serviceName)
+    #D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe
+    $remoteFiles = Get-ChildItem -Path $wpfRemotePath -Recurse
+    $localFiles = Get-ChildItem -Path $wpfLocalPath -Recurse
+    $remoteFileNames = $remoteFiles | ForEach-Object {$_.FullName.Replace($wpfRemotePath, "")}
+    $localFileNames = $localFiles | ForEach-Object {$_.FullName.Replace($wpfLocalPath, "")}
+    foreach ($localFile in $localFiles) {
+        
+    }
 }
 
 $configs = Get-Content -Path D:\autopub\pub.config
@@ -88,5 +96,5 @@ $configs = Get-Content -Path D:\autopub\pub.config
 #BuildWpf $configs[10] $configs[11]
 #RemoveApiTarget $configs[0]
 #BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
-Publish 192.168.10.186 ApiPreview $configs[12]
+Publish 192.168.10.186 ApiPreview $configs[12] $configs[13] $configs[14]
 
