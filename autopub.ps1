@@ -81,12 +81,12 @@ Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
 }
 
 Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePath, 
-[string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath,[string] $excludeFileStrs) {
+    [string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath, [string] $excludeFileStrs) {
     #Restart-Service -InputObject $(Get-Service -Computer $ip -Name $serviceName)
     #D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe
     $null | Out-File -FilePath  $filesHasToCopyPath  #先清空文件内容
-    $remoteFiles = Get-ChildItem -Path $wpfRemotePath -Recurse -File
-    $localFiles = Get-ChildItem -Path $wpfLocalPath -Recurse -File
+    $remoteFiles = Get-ChildItem -Path $wpfRemotePath -Recurse -File | Where-Object -FilterScript {($_.FullName -notlike "*\Log\*") -and ($_.FullName -notlike "*\ComplicatedReportTemplate\*") -and ($_.FullName -notlike "*\TempUpdate\*")}
+    $localFiles = Get-ChildItem -Path $wpfLocalPath -Recurse -File | Where-Object -FilterScript {($_.FullName -notlike "*\Log\*") -and ($_.FullName -notlike "*\ComplicatedReportTemplate\*") -and ($_.FullName -notlike "*\TempUpdate\*")}
     foreach ($localFile in $localFiles) {
         $localFileSufix = $localFile.FullName.Replace($wpfLocalPath, "")
         $fileExist = New-Object -TypeName System.Boolean
