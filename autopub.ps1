@@ -80,7 +80,8 @@ Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
     C:\"Program Files (x86)\MSBuild"\12.0\Bin\MSBuild.exe  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"
 }
 
-Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath) {
+Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePath, 
+[string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath,[string] $excludeFileStrs) {
     #Restart-Service -InputObject $(Get-Service -Computer $ip -Name $serviceName)
     #D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe
     $null | Out-File -FilePath  $filesHasToCopyPath  #先清空文件内容
@@ -109,5 +110,5 @@ $configs = Get-Content -Path D:\autopub\pub.config
 #BuildWpf $configs[10] $configs[11]
 #RemoveApiTarget $configs[0]
 #BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
-Publish 192.168.10.186 ApiPreview $configs[12] $configs[13] $configs[14] $configs[15] 
+Publish 192.168.10.186 ApiPreview $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
 

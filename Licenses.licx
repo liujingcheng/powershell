@@ -1,0 +1,6 @@
+GrapeCity.ActiveReports.Viewer.Wpf.Viewer, GrapeCity.ActiveReports.Viewer.Wpf.v10, Version=10.1.6726.0, Culture=neutral, PublicKeyToken=cc4967777c49a3ff
+GrapeCity.ActiveReports.Design.Designer, GrapeCity.ActiveReports.Design.Win.v10, Version=10.1.6726.0, Culture=neutral, PublicKeyToken=cc4967777c49a3ff
+GrapeCity.ActiveReports.SectionReport, GrapeCity.ActiveReports.v10, Version=10.1.6726.0, Culture=neutral, PublicKeyToken=cc4967777c49a3ff
+GrapeCity.ActiveReports.Export.Pdf.Section.PdfExport, GrapeCity.ActiveReports.Export.Pdf.v10, Version=10.1.6726.0, Culture=neutral, PublicKeyToken=cc4967777c49a3ff
+GrapeCity.ActiveReports.PageReport, GrapeCity.ActiveReports.v10, Version=10.1.6726.0, Culture=neutral, PublicKeyToken=cc4967777c49a3ff
+GrapeCity.ActiveReports.Viewer.Win.Viewer, GrapeCity.ActiveReports.Viewer.Win.v10, Version=10.1.6726.0, Culture=neutral, PublicKeyToken=cc4967777c49a3ff

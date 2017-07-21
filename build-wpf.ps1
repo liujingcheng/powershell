@@ -1,0 +1,1 @@
+C:\"Program Files (x86)\MSBuild"\12.0\Bin\MSBuild.exe  D:\autopub\source\shenlianerp_main\ShenLianERPSystem\ShenLianERPSystem.sln  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"
