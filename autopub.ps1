@@ -83,9 +83,9 @@ Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
 Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath) {
     #Restart-Service -InputObject $(Get-Service -Computer $ip -Name $serviceName)
     #D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe
-    $null | Out-File -FilePath  $filesHasToCopyPath  -Encoding ascii #先清空文件内容
-    $remoteFiles = Get-ChildItem -Path $wpfRemotePath -Recurse
-    $localFiles = Get-ChildItem -Path $wpfLocalPath -Recurse
+    $null | Out-File -FilePath  $filesHasToCopyPath  #先清空文件内容
+    $remoteFiles = Get-ChildItem -Path $wpfRemotePath -Recurse -File
+    $localFiles = Get-ChildItem -Path $wpfLocalPath -Recurse -File
     foreach ($localFile in $localFiles) {
         $localFileSufix = $localFile.FullName.Replace($wpfLocalPath, "")
         $fileExist = New-Object -TypeName System.Boolean
@@ -93,12 +93,12 @@ Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePa
             if ($remoteFile.FullName.EndsWith($localFileSufix)) {
                 $fileExist = $true
                 if ($localFile.LastWriteTime -gt $remoteFile.LastWriteTime) {
-                    $localFileSufix | Out-File -FilePath  $filesHasToCopyPath -Append -Encoding ascii
+                    $localFileSufix | Out-File -FilePath  $filesHasToCopyPath -Append
                 }
             }
         }
         if ($fileExist -eq $false) {
-            $localFileSufix | Out-File -FilePath  $filesHasToCopyPath -Append -Encoding ascii
+            $localFileSufix | Out-File -FilePath  $filesHasToCopyPath -Append
         }
     }
 }
