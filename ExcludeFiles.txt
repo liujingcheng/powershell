@@ -1,8 +1,5 @@
-ComplicatedReportTemplate
-\Log\
 .pdb
 .vshost.
-\TempUpdate\
 GalaSoft.MvvmLight
 Microsoft.Practices
 app.publish
@@ -12,3 +9,5 @@ ShenLianSystem.exe.config
 .xml
 DataAccess.dll
 .rar
+.config
+.Config
