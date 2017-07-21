@@ -10,6 +10,8 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
     Remove-Item -Path $logFile -Force
     D:\autopub\rm-utf-bom\RemoveUtfBom.exe $srcpath
 
+    $null | Out-File -FilePath $logFile #先清空文件内容
+
     $tempSrcPath = $srcpath.Replace("\src", "\temp")
     $libPath = $libPath + "\*;" + $classpath;
     $firstSrcFile = $tempSrcPath + "\com\canyou\CanYouConfig.java";
@@ -19,7 +21,7 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
     $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
     $srcs.Length
     $classes.Length
-    $srcs.Length | Out-File -FilePath $logFile
+    $srcs.Length | Out-File -FilePath $logFile -Append
     $classes.Length | Out-File -FilePath $logFile -Append
 
     $missedPaths = New-Object -TypeName System.Collections.ArrayList
@@ -78,15 +80,26 @@ Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
     C:\"Program Files (x86)\MSBuild"\12.0\Bin\MSBuild.exe  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"
 }
 
-Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [string] $wpfRemotePath) {
+Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath) {
     #Restart-Service -InputObject $(Get-Service -Computer $ip -Name $serviceName)
     #D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe
+    $null | Out-File -FilePath  $filesHasToCopyPath  -Encoding ascii #先清空文件内容
     $remoteFiles = Get-ChildItem -Path $wpfRemotePath -Recurse
     $localFiles = Get-ChildItem -Path $wpfLocalPath -Recurse
-    $remoteFileNames = $remoteFiles | ForEach-Object {$_.FullName.Replace($wpfRemotePath, "")}
-    $localFileNames = $localFiles | ForEach-Object {$_.FullName.Replace($wpfLocalPath, "")}
     foreach ($localFile in $localFiles) {
-        
+        $localFileSufix = $localFile.FullName.Replace($wpfLocalPath, "")
+        $fileExist = New-Object -TypeName System.Boolean
+        foreach ($remoteFile in $remoteFiles) {
+            if ($remoteFile.FullName.EndsWith($localFileSufix)) {
+                $fileExist = $true
+                if ($localFile.LastWriteTime -gt $remoteFile.LastWriteTime) {
+                    $localFileSufix | Out-File -FilePath  $filesHasToCopyPath -Append -Encoding ascii
+                }
+            }
+        }
+        if ($fileExist -eq $false) {
+            $localFileSufix | Out-File -FilePath  $filesHasToCopyPath -Append -Encoding ascii
+        }
     }
 }
 
@@ -96,5 +109,5 @@ $configs = Get-Content -Path D:\autopub\pub.config
 #BuildWpf $configs[10] $configs[11]
 #RemoveApiTarget $configs[0]
 #BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
-Publish 192.168.10.186 ApiPreview $configs[12] $configs[13] $configs[14]
+Publish 192.168.10.186 ApiPreview $configs[12] $configs[13] $configs[14] $configs[15] 
 
