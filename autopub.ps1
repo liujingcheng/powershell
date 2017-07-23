@@ -77,7 +77,7 @@ Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
     #Invoke-Item -Path $msBuildPath 
     #$command = $msBuildPath + " " + $slnPath + ' /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"'
     #Invoke-Command -FilePath D:\autopub\build-wpf.ps1
-    C:\"Program Files (x86)\MSBuild"\12.0\Bin\MSBuild.exe  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"
+    C:\"Program Files (x86)"\"Microsoft Visual Studio"\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"
 }
 
 Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePath, 
@@ -94,8 +94,8 @@ Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePa
     foreach ($localFile in $localFiles) {
         $localFileSufix = $localFile.FullName.Replace($wpfLocalPath, "")
         foreach ($excludeFileStr in $excludeFileStrs) {
-            $localFileSufix
-            $excludeFileStr
+            #$localFileSufix
+            #$excludeFileStr
             if ($localFileSufix.Contains($excludeFileStr)) {
                 continue outer
             }
@@ -103,7 +103,7 @@ Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePa
 
         $fileExist = New-Object -TypeName System.Boolean
         foreach ($remoteFile in $remoteFiles) {
-            if ($remoteFile.FullName.EndsWith($localFileSufix)) {
+            if ($remoteFile.FullName.Replace($wpfRemotePath, "").Equals($localFileSufix)) {
                 $fileExist = $true
                 if ($localFile.LastWriteTime -gt $remoteFile.LastWriteTime) {
                     $localFileSufix | Out-File -FilePath  $filesHasToCopyPath -Append
@@ -114,12 +114,23 @@ Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePa
             $localFileSufix | Out-File -FilePath  $filesHasToCopyPath -Append
         }
     }
+
+    $filesHasToCopy = Get-Content -Path $filesHasToCopyPath
+    foreach ($filePath in $filesHasToCopy) {
+        [string] $srcPath = $wpfLocalPath + $filePath
+        [string] $destPath = $wpfRemotePath + $filePath
+        Copy-Item -Path $srcPath $destPath -Force
+        "拷贝文件到服务器：" + $filePath
+    }
+
+    D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe
+
 }
 
 $configs = Get-Content -Path D:\autopub\pub.config
 #GitPull $configs[4] $configs[9] $configs[5]
 #AddLicenses $configs[6] $configs[7] $configs[8]
-#BuildWpf $configs[10] $configs[11]
+BuildWpf $configs[10] $configs[11]
 #RemoveApiTarget $configs[0]
 #BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
 Publish 192.168.10.186 ApiPreview $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 

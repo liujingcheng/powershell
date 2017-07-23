@@ -5,9 +5,7 @@ Microsoft.Practices
 app.publish
 ShenLianSystem.exe.manifest
 ShenLianSystem.application
-ShenLianSystem.exe.config
-.xml
 DataAccess.dll
-.rar
-.config
-.Config
+AutoUpdater1.exeAutoUpdater1.exe
+ShenLianSystem.exe.config
+ShenLianSystem.exe.Config
