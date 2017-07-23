@@ -2,15 +2,19 @@
 Function RemoveApiTarget([string] $classpath) {
     $targetDirs = Get-ChildItem -Path $classpath -Directory
     foreach ($dir in $targetDirs) {
-        Remove-Item -Path $dir.FullName -Recurse -Force
+        Remove-Item -Path $dir.FullName -Recurse
     }
 }
 
-Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [string]$logFile) {
-    Remove-Item -Path $logFile -Force
-    D:\autopub\rm-utf-bom\RemoveUtfBom.exe $srcpath
+Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [string] $apiBuildlogFile) {
 
-    $null | Out-File -FilePath $logFile #先清空文件内容
+    RemoveApiTarget($classpath)
+
+    Copy-Item -Path $srcpath.Replace("\src", "\conf\bpmn")  $classpath -Force
+
+    D:\autopub\rm-utf-bom\RemoveUtfBom.exe $srcpath #去BOM头
+
+    $null | Out-File -FilePath $apiBuildlogFile #先清空文件内容
 
     $tempSrcPath = $srcpath.Replace("\src", "\temp")
     $libPath = $libPath + "\*;" + $classpath;
@@ -21,8 +25,8 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
     $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
     $srcs.Length
     $classes.Length
-    $srcs.Length | Out-File -FilePath $logFile -Append
-    $classes.Length | Out-File -FilePath $logFile -Append
+    $srcs.Length | Out-File -FilePath $apiBuildlogFile -Append
+    $classes.Length | Out-File -FilePath $apiBuildlogFile -Append
 
     $missedPaths = New-Object -TypeName System.Collections.ArrayList
     foreach ($src in $srcs) {
@@ -32,7 +36,7 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
                 $missedPaths.Add($dirPath)
                 $srcFilePath = $tempSrcPath + $dirPath + "\*.java"
                 $srcFilePath
-                $srcFilePath | Out-File -FilePath $logFile -Append
+                $srcFilePath | Out-File -FilePath $apiBuildlogFile -Append
                 javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $srcFilePath
             }
         }
@@ -42,12 +46,12 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
     $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
     $srcs.Length
     $classes.Length
-    $srcs.Length | Out-File -FilePath $logFile -Append
-    $classes.Length | Out-File -FilePath $logFile -Append
+    $srcs.Length | Out-File -FilePath $apiBuildlogFile -Append
+    $classes.Length | Out-File -FilePath $apiBuildlogFile -Append
     foreach ($src in $srcs) {
         if (!$classes.Contains($src)) {
             $src
-            $src | Out-File -FilePath $logFile -Append
+            $src | Out-File -FilePath $apiBuildlogFile -Append
         }
     }
     Remove-Item -Path $tempSrcPath -Recurse -Force
@@ -75,15 +79,33 @@ Function AddLicenses($licensePath, $destPath1, $destPath2) {
 
 Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
     #Invoke-Item -Path $msBuildPath 
-    #$command = $msBuildPath + " " + $slnPath + ' /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"'
+    #$command = $msBuildPath + " " + $slnPath + ' /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;apiBuildlogFile=Build.log;errorsonly;Encoding=UTF-8"'
     #Invoke-Command -FilePath D:\autopub\build-wpf.ps1
-    C:\"Program Files (x86)"\"Microsoft Visual Studio"\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;logfile=Build.log;errorsonly;Encoding=UTF-8"
+    C:\"Program Files (x86)"\"Microsoft Visual Studio"\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;apiBuildlogFile=Build.log;errorsonly;Encoding=UTF-8"
 }
 
-Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePath, 
-    [string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath, [string] $excludeFileStrsConfig) {
-    #Restart-Service -InputObject $(Get-Service -Computer $ip -Name $serviceName)
-    #D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe
+Function PublishApi([string] $localTargetPath, [string] $remoteTargetPath, [string] $computerName, [string] $serviceName) {
+    RemoveApiTarget($remoteTargetPath)
+
+    $srcDirs = Get-ChildItem -Path $localTargetPath -Directory
+    foreach ($dir in $srcDirs) {
+        "拷贝目录" + $dir
+        Copy-Item -Path $dir.FullName $remoteTargetPath -Recurse -Force
+    }
+
+    $service = Get-Service -ComputerName $computerName -Name $serviceName
+
+    if ($service.CanStop -and $service.Status -eq 'Running') {
+        Restart-Service -InputObject $(Get-Service -Computer $computerName -Name $serviceName)
+        "服务已重启：" + $serviceName
+    }
+    if ($service.Status -eq 'Stopped') {
+        Start-Service -InputObject $(Get-Service -Computer $computerName -Name $serviceName)
+        "服务已启动：" + $serviceName
+    }
+}
+
+Function PublishWpf([string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath, [string] $excludeFileStrsConfig) {
     $null | Out-File -FilePath  $filesHasToCopyPath  #先清空文件内容
     $remoteFiles = Get-ChildItem -Path $wpfRemotePath -Recurse -File | Where-Object -FilterScript {($_.FullName -notlike "*\Log\*") -and ($_.FullName -notlike "*\ComplicatedReportTemplate\*") -and ($_.FullName -notlike "*\TempUpdate\*")}
     $localFiles = Get-ChildItem -Path $wpfLocalPath -Recurse -File | Where-Object -FilterScript {($_.FullName -notlike "*\Log\*") -and ($_.FullName -notlike "*\ComplicatedReportTemplate\*") -and ($_.FullName -notlike "*\TempUpdate\*")}
@@ -94,8 +116,6 @@ Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePa
     foreach ($localFile in $localFiles) {
         $localFileSufix = $localFile.FullName.Replace($wpfLocalPath, "")
         foreach ($excludeFileStr in $excludeFileStrs) {
-            #$localFileSufix
-            #$excludeFileStr
             if ($localFileSufix.Contains($excludeFileStr)) {
                 continue outer
             }
@@ -128,10 +148,10 @@ Function Publish([string] $ip, [string] $serviceName, [string]  $wpfAutoPubExePa
 }
 
 $configs = Get-Content -Path D:\autopub\pub.config
-#GitPull $configs[4] $configs[9] $configs[5]
-#AddLicenses $configs[6] $configs[7] $configs[8]
+GitPull $configs[4] $configs[9] $configs[5]
+AddLicenses $configs[6] $configs[7] $configs[8]
 BuildWpf $configs[10] $configs[11]
-#RemoveApiTarget $configs[0]
-#BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
-Publish 192.168.10.186 ApiPreview $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
+BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
+PublishApi $configs[0] $configs[17] 192.168.10.186 ApiPreview
+PublishWpf  $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
 
