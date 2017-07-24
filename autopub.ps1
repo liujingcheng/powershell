@@ -139,6 +139,13 @@ Function PublishWpf([string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [strin
     foreach ($filePath in $filesHasToCopy) {
         [string] $srcPath = $wpfLocalPath + $filePath
         [string] $destPath = $wpfRemotePath + $filePath
+
+        $dir = $destPath.Substring(0, $destPath.LastIndexOf("\"))
+        if ((Test-Path $dir) -eq $false) {
+            #文件夹不存在就创建
+            New-Item -Path $dir -ItemType "directory"
+        }
+
         Copy-Item -Path $srcPath $destPath -Force
         "拷贝文件到服务器：" + $filePath
     }
@@ -154,4 +161,3 @@ BuildWpf $configs[10] $configs[11]
 BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
 PublishApi $configs[0] $configs[17] 192.168.10.186 ApiPreview
 PublishWpf  $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
-
