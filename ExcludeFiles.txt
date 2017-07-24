@@ -9,3 +9,4 @@ DataAccess.dll
 AutoUpdater1.exeAutoUpdater1.exe
 ShenLianSystem.exe.config
 ShenLianSystem.exe.Config
+UpdateList.xml
