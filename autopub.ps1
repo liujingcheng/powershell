@@ -151,7 +151,7 @@ Function PublishWpf([string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [strin
     }
 
     Copy-Item -Path ($wpfRemotePath + "\UpdateList.xml") ($wpfLocalPath + "\UpdateList.xml") -Force
-    D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe ($wpfLocalPath + "\UpdateList.xml") $filesHasToCopyPath
+    D:\autopub\wpf-update-xml\AutoPublish-preview\AutoPublish.exe ($wpfLocalPath + "\UpdateList.xml") $filesHasToCopyPath
     Copy-Item -Path ($wpfLocalPath + "\UpdateList.xml") ($wpfRemotePath + "\UpdateList.xml") -Force
 }
 
