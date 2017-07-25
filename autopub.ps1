@@ -105,12 +105,12 @@ Function PublishApi([string] $localTargetPath, [string] $remoteTargetPath, [stri
     }
 }
 
-Function PublishWpf([string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath, [string] $excludeFileStrsConfig) {
+Function PublishWpf([string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath, [string] $excludeFilesPath) {
     $null | Out-File -FilePath  $filesHasToCopyPath  #先清空文件内容
     $remoteFiles = Get-ChildItem -Path $wpfRemotePath -Recurse -File | Where-Object -FilterScript {($_.FullName -notlike "*\Log\*") -and ($_.FullName -notlike "*\ComplicatedReportTemplate\*") -and ($_.FullName -notlike "*\TempUpdate\*")}
     $localFiles = Get-ChildItem -Path $wpfLocalPath -Recurse -File | Where-Object -FilterScript {($_.FullName -notlike "*\Log\*") -and ($_.FullName -notlike "*\ComplicatedReportTemplate\*") -and ($_.FullName -notlike "*\TempUpdate\*")}
     
-    $excludeFileStrs = Get-Content -Path  $excludeFileStrsConfig
+    $excludeFileStrs = Get-Content -Path  $excludeFilesPath
 
     :outer
     foreach ($localFile in $localFiles) {
@@ -150,10 +150,12 @@ Function PublishWpf([string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [strin
         "拷贝文件到服务器：" + $filePath
     }
 
-    D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe
+    Copy-Item -Path ($wpfRemotePath + "\UpdateList.xml") ($wpfLocalPath + "\UpdateList.xml") -Force
+    D:\autopub\wpf-pub\AutoPublish-preview\AutoPublish.exe ($wpfLocalPath + "\UpdateList.xml") $filesHasToCopyPath
+    Copy-Item -Path ($wpfLocalPath + "\UpdateList.xml") ($wpfRemotePath + "\UpdateList.xml") -Force
 }
 
-clear
+Clear-Host
 $startTime = Get-Date
 $configs = Get-Content -Path D:\autopub\pub.config
 GitPull $configs[4] $configs[9] $configs[5]
