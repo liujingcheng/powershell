@@ -151,21 +151,28 @@ Function PublishWpf([string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [strin
     }
 
     Copy-Item -Path ($wpfRemotePath + "\UpdateList.xml") ($wpfLocalPath + "\UpdateList.xml") -Force
-    D:\autopub\wpf-update-xml\AutoPublish-preview\AutoPublish.exe ($wpfLocalPath + "\UpdateList.xml") $filesHasToCopyPath
+    D:\autopub\update-xml.exe ($wpfLocalPath + "\UpdateList.xml") $filesHasToCopyPath
     Copy-Item -Path ($wpfLocalPath + "\UpdateList.xml") ($wpfRemotePath + "\UpdateList.xml") -Force
 }
 
-Clear-Host
-$startTime = Get-Date
-$configs = Get-Content -Path D:\autopub\pub.config
-GitPull $configs[4] $configs[9] $configs[5]
-AddLicenses $configs[6] $configs[7] $configs[8]
-BuildWpf $configs[10] $configs[11]
-BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
-PublishApi $configs[0] $configs[17] 192.168.10.186 ApiPreview
-PublishWpf  $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
-$endTime = Get-Date
+Function AutoPub([string] $autoPubDirPath, [string] $configFileName) {
+    Set-Location -Path $autoPubDirPath
+    Clear-Host
+    $startTime = Get-Date
+    $configs = Get-Content -Path $configFileName
+    GitPull $configs[4] $configs[9] $configs[5]
+    AddLicenses $configs[6] $configs[7] $configs[8]
+    BuildWpf $configs[10] $configs[11]
+    BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
+    PublishApi $configs[0] $configs[17] 192.168.10.186 ApiPreview
+    PublishWpf  $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
+    $endTime = Get-Date
+    $totalMinutes = ($endTime - $startTime).TotalMinutes
+    $tip = "共耗时：" + $totalMinutes
+    $tip
+    Write-Host 'Press Any Key!' -NoNewline
+    $null = [Console]::ReadKey('?')
+}
 
-$totalMinutes = ($endTime - $startTime).TotalMinutes
-$tip = "共耗时：" + $totalMinutes
-$tip
+# AutoPub D:\autopub pub-preview.config
+AutoPub D:\autopub pub-test.config
