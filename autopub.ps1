@@ -57,18 +57,24 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
     Remove-Item -Path $tempSrcPath -Recurse -Force
     Remove-Variable srcs, classes, missedPaths
 }
-Function GitPull([string] $apiGitPath, [string] $wpfGitPath, [string] $gitBranch) {
+Function GitPullApi([string] $apiGitPath, [string] $gitBranch) {
     $originBranch = "origin/" + $gitBranch
     Set-Location -Path $apiGitPath
     git reset --hard head
     git fetch origin $gitBranch
     git checkout  $originBranch
-
+}
+Function GitPullWpf([string] $wpfGitPath, [string] $gitBranch) {
     $originBranch = "origin/" + $gitBranch
     Set-Location -Path $wpfGitPath
     git reset --hard head
     git fetch origin $gitBranch
     git checkout  $originBranch
+}
+
+Function GitPull([string] $apiGitPath, [string] $wpfGitPath, [string] $gitBranch) {
+    GitPullApi($apiGitPath, $gitBranch)
+    GitPullWpf($wpfGitPath, $gitBranch)
 }
 
 Function AddLicenses($licensePath, $destPath1, $destPath2) {
@@ -155,11 +161,44 @@ Function PublishWpf([string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [strin
     Copy-Item -Path ($wpfLocalPath + "\UpdateList.xml") ($wpfRemotePath + "\UpdateList.xml") -Force
 }
 
-Function AutoPub([string] $autoPubDirPath, [string] $configFileName) {
+Function AutoPubApi([string] $autoPubDirPath, [string] $configFileName) {
+    $startTime = Get-Date
+    ("开始时间：" + $startTime)
+
+    Set-Location -Path $autoPubDirPath
+    $configs = Get-Content -Path $configFileName
+    GitPullApi $configs[4] $configs[5]
+    BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
+    PublishApi $configs[0] $configs[17] $configs[18] $configs[19]
+    
+    $endTime = Get-Date
+    ("结束时间：" + $endTime)
+    $totalMinutes = ($endTime - $startTime).TotalMinutes
+    ("共耗时：" + $totalMinutes)
+}
+
+Function AutoPubWpf([string] $autoPubDirPath, [string] $configFileName) {
+    $startTime = Get-Date
+    ("开始时间：" + $startTime)
+
+    Set-Location -Path $autoPubDirPath
+    $configs = Get-Content -Path $configFileName
+    GitPullWpf $configs[9] $configs[5]
+    AddLicenses $configs[6] $configs[7] $configs[8]
+    BuildWpf $configs[10] $configs[11]
+    PublishWpf  $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
+
+    $endTime = Get-Date
+    ("结束时间：" + $endTime)
+    $totalMinutes = ($endTime - $startTime).TotalMinutes
+    ("共耗时：" + $totalMinutes)
+}
+
+Function AutoPubWpf([string] $autoPubDirPath, [string] $configFileName) {
     Set-Location -Path $autoPubDirPath
     Clear-Host
     $startTime = Get-Date
-    ("开始时间："+$startTime)
+    ("开始时间：" + $startTime)
     $configs = Get-Content -Path $configFileName
     GitPull $configs[4] $configs[9] $configs[5]
     AddLicenses $configs[6] $configs[7] $configs[8]
@@ -168,12 +207,38 @@ Function AutoPub([string] $autoPubDirPath, [string] $configFileName) {
     PublishApi $configs[0] $configs[17] $configs[18] $configs[19]
     PublishWpf  $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
     $endTime = Get-Date
-    ("结束时间："+$endTime)
+    ("结束时间：" + $endTime)
     $totalMinutes = ($endTime - $startTime).TotalMinutes
     ("共耗时：" + $totalMinutes)
     Write-Host '按任意键结束...' -NoNewline
     $null = [Console]::ReadKey('?')
 }
-
 # AutoPub D:\autopub pub-preview.config | Out-File -FilePath D:\autopub\pub-log-preview.txt
-AutoPub D:\autopub pub-test.config | Out-File -FilePath D:\autopub\pub-log-test.txt
+# AutoPub D:\autopub pub-test.config | Out-File -FilePath D:\autopub\pub-log-test.txt
+
+ Clear-Host
+$start = Get-Date
+
+$task_api_pub_test = {AutoPubApi D:\autopub pub-test.config | Out-File -FilePath D:\autopub\test-api-pub-log.txt}
+$task_wpf_pub_test = {AutoPubWpf D:\autopub pub-test.config | Out-File -FilePath D:\autopub\test-wpf-pub-log.txt}
+$task_api_pub_preview = {AutoPubApi D:\autopub pub-preview.config | Out-File -FilePath D:\autopub\preview-api-pub-log.txt}
+$task_wpf_pub_preview = {AutoPubWpf D:\autopub pub-preview.config | Out-File -FilePath D:\autopub\preview-wpf-pub-log.txt}
+
+$thread1 = [PowerShell]::Create()
+$job1 = $thread1.AddScript($task_api_pub_preview).BeginInvoke()
+ 
+$thread2 = [PowerShell]::Create()
+$job2 = $thread2.AddScript($task_wpf_pub_preview).BeginInvoke()
+do { Start-Sleep -Milliseconds 100 } until ($job1.IsCompleted -and $job2.IsCompleted)
+ 
+$result1 = $thread1.EndInvoke($job1)
+$result2 = $thread2.EndInvoke($job2)
+ 
+$thread1.Runspace.Close()
+$thread1.Dispose()
+ 
+$thread2.Runspace.Close()
+$thread2.Dispose()
+
+$end = Get-Date
+Write-Host -ForegroundColor Red ($end - $start).TotalSeconds
