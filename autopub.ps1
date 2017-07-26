@@ -159,6 +159,7 @@ Function AutoPub([string] $autoPubDirPath, [string] $configFileName) {
     Set-Location -Path $autoPubDirPath
     Clear-Host
     $startTime = Get-Date
+    ("开始时间："+$startTime)
     $configs = Get-Content -Path $configFileName
     GitPull $configs[4] $configs[9] $configs[5]
     AddLicenses $configs[6] $configs[7] $configs[8]
@@ -167,12 +168,12 @@ Function AutoPub([string] $autoPubDirPath, [string] $configFileName) {
     PublishApi $configs[0] $configs[17] 192.168.10.186 ApiPreview
     PublishWpf  $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
     $endTime = Get-Date
+    ("结束时间："+$endTime)
     $totalMinutes = ($endTime - $startTime).TotalMinutes
-    $tip = "共耗时：" + $totalMinutes
-    $tip
+    ("共耗时：" + $totalMinutes)
     Write-Host '按任意键结束...' -NoNewline
     $null = [Console]::ReadKey('?')
 }
 
-# AutoPub D:\autopub pub-preview.config
-AutoPub D:\autopub pub-test.config
+# AutoPub D:\autopub pub-preview.config | Out-File -FilePath D:\autopub\pub-log-preview.txt
+AutoPub D:\autopub pub-test.config | Out-File -FilePath D:\autopub\pub-log-test.txt
