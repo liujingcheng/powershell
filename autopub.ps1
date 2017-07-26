@@ -170,7 +170,7 @@ Function AutoPub([string] $autoPubDirPath, [string] $configFileName) {
     $totalMinutes = ($endTime - $startTime).TotalMinutes
     $tip = "共耗时：" + $totalMinutes
     $tip
-    Write-Host 'Press Any Key!' -NoNewline
+    Write-Host '按任意键结束...' -NoNewline
     $null = [Console]::ReadKey('?')
 }
 
