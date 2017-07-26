@@ -165,7 +165,7 @@ Function AutoPub([string] $autoPubDirPath, [string] $configFileName) {
     AddLicenses $configs[6] $configs[7] $configs[8]
     BuildWpf $configs[10] $configs[11]
     BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
-    PublishApi $configs[0] $configs[17] 192.168.10.186 ApiPreview
+    PublishApi $configs[0] $configs[17] $configs[18] $configs[19]
     PublishWpf  $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
     $endTime = Get-Date
     ("结束时间："+$endTime)
