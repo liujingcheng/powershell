@@ -194,7 +194,7 @@ Function AutoPubWpf([string] $autoPubDirPath, [string] $configFileName) {
     ("共耗时：" + $totalMinutes)
 }
 
-Function AutoPubWpf([string] $autoPubDirPath, [string] $configFileName) {
+Function AutoPub([string] $autoPubDirPath, [string] $configFileName) {
     Set-Location -Path $autoPubDirPath
     Clear-Host
     $startTime = Get-Date
@@ -216,7 +216,7 @@ Function AutoPubWpf([string] $autoPubDirPath, [string] $configFileName) {
 # AutoPub D:\autopub pub-preview.config | Out-File -FilePath D:\autopub\pub-log-preview.txt
 # AutoPub D:\autopub pub-test.config | Out-File -FilePath D:\autopub\pub-log-test.txt
 
- Clear-Host
+Clear-Host
 $start = Get-Date
 
 $task_api_pub_test = {AutoPubApi D:\autopub pub-test.config | Out-File -FilePath D:\autopub\test-api-pub-log.txt}
