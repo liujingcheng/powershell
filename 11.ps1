@@ -10,8 +10,8 @@
     }
 }
 
-xxx \\192.168.10.186\Canyou\publish-ApiDemo\publish\WEB-INF\classes D:\autopub\source\slerp_api\target\classes
-xxx \\192.168.10.186\Canyou\publish-ApiPreview\publish\WEB-INF\classes D:\autopub\source\slerp_api\target\classes
-xxx \\192.168.10.186\Canyou\publish-sltest\publish\WEB-INF\classes D:\autopub\source\slerp_api\target\classes
+# xxx \\192.168.10.186\Canyou\publish-ApiDemo\publish\WEB-INF\classes D:\autopub\source\slerp_api\target\classes
+# xxx \\192.168.10.186\Canyou\publish-ApiPreview\publish\WEB-INF\classes D:\autopub\source\preview\slerp_api\target\classes
+xxx \\192.168.10.186\Canyou\publish-sltest\publish\WEB-INF\classes D:\autopub\source\test\slerp_api\target\classes
 
 
