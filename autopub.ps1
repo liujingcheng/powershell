@@ -84,10 +84,10 @@ Function AddLicenses($licensePath, $destPath1, $destPath2) {
 }
 
 Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
-    #Invoke-Item -Path $msBuildPath 
-    #$command = $msBuildPath + " " + $slnPath + ' /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;apiBuildlogFile=Build.log;errorsonly;Encoding=UTF-8"'
-    #Invoke-Command -FilePath D:\autopub\build-wpf.ps1
-    C:\"Program Files (x86)"\"Microsoft Visual Studio"\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;apiBuildlogFile=Build.log;errorsonly;Encoding=UTF-8"
+    $execArgs = " /t:Rebuild  /M:8 /p:Configuration=Release  /fl "
+    $execArgs = $execArgs + " `"/flp:FileLogger,Microsoft.Build.Engine;apiBuildlogFile=Build.log;errorsonly;Encoding=UTF-8`""
+
+    &$msBuildPath  $slnPath  $execArgs
 }
 
 Function PublishApi([string] $localTargetPath, [string] $remoteTargetPath, [string] $computerName, [string] $serviceName) {
@@ -111,7 +111,7 @@ Function PublishApi([string] $localTargetPath, [string] $remoteTargetPath, [stri
     }
 }
 
-Function PublishWpf([string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath, [string] $excludeFilesPath) {
+Function PublishWpf([string]  $wpfUpdateXmlExecPath, [string] $wpfLocalPath, [string] $wpfRemotePath, [string] $filesHasToCopyPath, [string] $excludeFilesPath) {
     $null | Out-File -FilePath  $filesHasToCopyPath  #先清空文件内容
     $remoteFiles = Get-ChildItem -Path $wpfRemotePath -Recurse -File | Where-Object -FilterScript {($_.FullName -notlike "*\Log\*") -and ($_.FullName -notlike "*\ComplicatedReportTemplate\*") -and ($_.FullName -notlike "*\TempUpdate\*")}
     $localFiles = Get-ChildItem -Path $wpfLocalPath -Recurse -File | Where-Object -FilterScript {($_.FullName -notlike "*\Log\*") -and ($_.FullName -notlike "*\ComplicatedReportTemplate\*") -and ($_.FullName -notlike "*\TempUpdate\*")}
@@ -157,7 +157,7 @@ Function PublishWpf([string]  $wpfAutoPubExePath, [string] $wpfLocalPath, [strin
     }
 
     Copy-Item -Path ($wpfRemotePath + "\UpdateList.xml") ($wpfLocalPath + "\UpdateList.xml") -Force
-    D:\autopub\update-xml.exe ($wpfLocalPath + "\UpdateList.xml") $filesHasToCopyPath
+    & $wpfUpdateXmlExecPath ($wpfLocalPath + "\UpdateList.xml") $filesHasToCopyPath
     Copy-Item -Path ($wpfLocalPath + "\UpdateList.xml") ($wpfRemotePath + "\UpdateList.xml") -Force
 }
 
@@ -213,32 +213,7 @@ Function AutoPub([string] $autoPubDirPath, [string] $configFileName) {
     Write-Host '按任意键结束...' -NoNewline
     $null = [Console]::ReadKey('?')
 }
-# AutoPub D:\autopub pub-preview.config | Out-File -FilePath D:\autopub\pub-log-preview.txt
-# AutoPub D:\autopub pub-test.config | Out-File -FilePath D:\autopub\pub-log-test.txt
 
 Clear-Host
-$start = Get-Date
-
-$task_api_pub_test = {AutoPubApi D:\autopub pub-test.config | Out-File -FilePath D:\autopub\test-api-pub-log.txt}
-$task_wpf_pub_test = {AutoPubWpf D:\autopub pub-test.config | Out-File -FilePath D:\autopub\test-wpf-pub-log.txt}
-$task_api_pub_preview = {AutoPubApi D:\autopub pub-preview.config | Out-File -FilePath D:\autopub\preview-api-pub-log.txt}
-$task_wpf_pub_preview = {AutoPubWpf D:\autopub pub-preview.config | Out-File -FilePath D:\autopub\preview-wpf-pub-log.txt}
-
-$thread1 = [PowerShell]::Create()
-$job1 = $thread1.AddScript($task_api_pub_preview).BeginInvoke()
- 
-$thread2 = [PowerShell]::Create()
-$job2 = $thread2.AddScript($task_wpf_pub_preview).BeginInvoke()
-do { Start-Sleep -Milliseconds 100 } until ($job1.IsCompleted -and $job2.IsCompleted)
- 
-$result1 = $thread1.EndInvoke($job1)
-$result2 = $thread2.EndInvoke($job2)
- 
-$thread1.Runspace.Close()
-$thread1.Dispose()
- 
-$thread2.Runspace.Close()
-$thread2.Dispose()
-
-$end = Get-Date
-Write-Host -ForegroundColor Red ($end - $start).TotalSeconds
+AutoPub D:\autopub pub-preview.config | Out-File -FilePath D:\autopub\pub-log-preview.txt
+# AutoPub D:\autopub pub-test.config | Out-File -FilePath D:\autopub\pub-log-test.txt
