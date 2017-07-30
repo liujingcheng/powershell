@@ -6,7 +6,9 @@ function test-task ([string] $message) {
 
 # test-task task1 
 
-$task1 = { test-task task1 }
+$JavaBuildScriptPath="xxx"
+
+$task1 = { $JavaBuildScriptPath  | Out-File -FilePath "D:\test-task-1.txt"}
 $thread1 = [PowerShell]::Create()
 $job1 = $thread1.AddScript($task1).BeginInvoke()
  

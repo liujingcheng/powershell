@@ -1,4 +1,6 @@
-﻿#javac -encoding "UTF-8" -sourcepath D:\autopub\source\slerp_api\temp -classpath D:\autopub\lib\* -d D:\autopub\source\slerp_api\target\classes  D:\autopub\source\slerp_api\temp\com\canyou\CanYouConfig.java
+﻿
+param($AutoPubDirPath, $ConfigFilePath, $OutPutFilePath, $PubType)
+
 Function RemoveApiTarget([string] $classpath) {
     $targetDirs = Get-ChildItem -Path $classpath -Directory
     foreach ($dir in $targetDirs) {
@@ -6,15 +8,13 @@ Function RemoveApiTarget([string] $classpath) {
     }
 }
 
-Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [string] $apiBuildlogFile) {
+Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
 
     RemoveApiTarget($classpath)
 
     Copy-Item -Path $srcpath.Replace("\src", "\conf\bpmn")  $classpath -Force
 
     D:\autopub\rm-utf-bom\RemoveUtfBom.exe $srcpath #去BOM头
-
-    $null | Out-File -FilePath $apiBuildlogFile #先清空文件内容
 
     $tempSrcPath = $srcpath.Replace("\src", "\temp")
     $libPath = $libPath + "\*;" + $classpath;
@@ -25,8 +25,6 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
     $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
     $srcs.Length
     $classes.Length
-    $srcs.Length | Out-File -FilePath $apiBuildlogFile -Append
-    $classes.Length | Out-File -FilePath $apiBuildlogFile -Append
 
     $missedPaths = New-Object -TypeName System.Collections.ArrayList
     foreach ($src in $srcs) {
@@ -36,7 +34,6 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
                 $missedPaths.Add($dirPath)
                 $srcFilePath = $tempSrcPath + $dirPath + "\*.java"
                 $srcFilePath
-                $srcFilePath | Out-File -FilePath $apiBuildlogFile -Append
                 javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $srcFilePath
             }
         }
@@ -46,12 +43,9 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath, [st
     $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
     $srcs.Length
     $classes.Length
-    $srcs.Length | Out-File -FilePath $apiBuildlogFile -Append
-    $classes.Length | Out-File -FilePath $apiBuildlogFile -Append
     foreach ($src in $srcs) {
         if (!$classes.Contains($src)) {
             $src
-            $src | Out-File -FilePath $apiBuildlogFile -Append
         }
     }
     Remove-Item -Path $tempSrcPath -Recurse -Force
@@ -70,11 +64,6 @@ Function GitPullWpf([string] $wpfGitPath, [string] $gitBranch) {
     git reset --hard head
     git fetch origin $gitBranch
     git checkout  $originBranch
-}
-
-Function GitPull([string] $apiGitPath, [string] $wpfGitPath, [string] $gitBranch) {
-    GitPullApi($apiGitPath, $gitBranch)
-    GitPullWpf($wpfGitPath, $gitBranch)
 }
 
 Function AddLicenses($licensePath, $destPath1, $destPath2) {
@@ -166,7 +155,7 @@ Function AutoPubApi([string] $autoPubDirPath, [string] $configFileName) {
     Set-Location -Path $autoPubDirPath
     $configs = Get-Content -Path $configFileName
     GitPullApi $configs[4] $configs[5]
-    BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
+    BuildApi $configs[1] $configs[0] $configs[2]
     PublishApi $configs[0] $configs[17] $configs[18] $configs[19]
     
     $endTime = Get-Date
@@ -192,26 +181,9 @@ Function AutoPubWpf([string] $autoPubDirPath, [string] $configFileName) {
     ("共耗时：" + $totalMinutes)
 }
 
-Function AutoPub([string] $autoPubDirPath, [string] $configFileName) {
-    Set-Location -Path $autoPubDirPath
-    Clear-Host
-    $startTime = Get-Date
-    ("开始时间：" + $startTime)
-    $configs = Get-Content -Path $configFileName
-    GitPull $configs[4] $configs[9] $configs[5]
-    AddLicenses $configs[6] $configs[7] $configs[8]
-    BuildWpf $configs[10] $configs[11]
-    BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
-    PublishApi $configs[0] $configs[17] $configs[18] $configs[19]
-    PublishWpf  $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
-    $endTime = Get-Date
-    ("结束时间：" + $endTime)
-    $totalMinutes = ($endTime - $startTime).TotalMinutes
-    ("共耗时：" + $totalMinutes)
-    Write-Host '按任意键结束...' -NoNewline
-    $null = [Console]::ReadKey('?')
+if ($PubType.Contains("api")) {
+    AutoPubApi $AutoPubDirPath $ConfigFilePath | Out-File -FilePath $OutPutFilePath
 }
-
-Clear-Host
-AutoPub D:\autopub pub-preview.config | Out-File -FilePath D:\autopub\pub-log-preview.txt
-# AutoPub D:\autopub pub-test.config | Out-File -FilePath D:\autopub\pub-log-test.txt
+if ($PubType.Contains("wpf")) {
+    AutoPubWpf $AutoPubDirPath $ConfigFilePath | Out-File -FilePath $OutPutFilePath
+}
