@@ -12,7 +12,7 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
 
     RemoveApiTarget($classpath)
 
-    Copy-Item -Path $srcpath.Replace("\src", "\conf\bpmn")  $classpath -Force
+    Copy-Item -Path $srcpath.Replace("\src", "\conf\bpmn")  $classpath -Recurse -Force
 
     D:\autopub\rm-utf-bom\RemoveUtfBom.exe $srcpath #去BOM头
 
