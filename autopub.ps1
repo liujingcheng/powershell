@@ -8,7 +8,7 @@ Function RemoveApiTarget([string] $classpath) {
     }
 }
 
-Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
+Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath,[string] $apiBuildLogPath) {
 
     RemoveApiTarget($classpath)
 
@@ -19,10 +19,16 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
     $tempSrcPath = $srcpath.Replace("\src", "\temp")
     $libPath = $libPath + "\*;" + $classpath;
     $firstSrcFile = $tempSrcPath + "\com\canyou\CanYouConfig.java";
-    javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $firstSrcFile
+    javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $firstSrcFile | Out-File -FilePath $apiBuildLogPath
 
     $srcs = Get-ChildItem -Path $tempSrcPath -Recurse -Include *.java  | ForEach-Object {$_.FullName.Replace($tempSrcPath, "").Replace(".java", "")}
     $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
+    
+    if (($classes -eq $null) -or $classes.Length -eq 0) {
+        Write-Host "没取到编绎完成的class文件"
+        return
+    }
+
     $srcs.Length
     $classes.Length
 
@@ -34,7 +40,7 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath) {
                 $missedPaths.Add($dirPath)
                 $srcFilePath = $tempSrcPath + $dirPath + "\*.java"
                 $srcFilePath
-                javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $srcFilePath
+                javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $srcFilePath | Out-File -FilePath $apiBuildLogPath -Append
             }
         }
     }
@@ -78,9 +84,14 @@ Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
 }
 
 Function PublishApi([string] $localTargetPath, [string] $remoteTargetPath, [string] $computerName, [string] $serviceName) {
-    RemoveApiTarget($remoteTargetPath)
 
     $srcDirs = Get-ChildItem -Path $localTargetPath -Directory
+    if (($srcDirs -eq $null) -or $srcDirs.Length -lt 4) {
+        Write-Host "要拷贝的class文件目录数小于4，不正确"
+        return
+    }
+
+    RemoveApiTarget($remoteTargetPath)
     foreach ($dir in $srcDirs) {
         "拷贝目录" + $dir
         Copy-Item -Path $dir.FullName $remoteTargetPath -Recurse -Force
@@ -155,7 +166,7 @@ Function AutoPubApi([string] $autoPubDirPath, [string] $configFileName) {
     Set-Location -Path $autoPubDirPath
     $configs = Get-Content -Path $configFileName
     GitPullApi $configs[4] $configs[5]
-    BuildApi $configs[1] $configs[0] $configs[2]
+    BuildApi $configs[1] $configs[0] $configs[2] $configs[3] | Out-File -FilePath $configs[3]
     PublishApi $configs[0] $configs[17] $configs[18] $configs[19]
     
     $endTime = Get-Date
@@ -181,9 +192,12 @@ Function AutoPubWpf([string] $autoPubDirPath, [string] $configFileName) {
     ("共耗时：" + $totalMinutes)
 }
 
-if ($PubType.Contains("api")) {
+if (!($PubType -eq $null) -and $PubType.Contains("api")) {
     AutoPubApi $AutoPubDirPath $ConfigFilePath | Out-File -FilePath $OutPutFilePath
 }
-if ($PubType.Contains("wpf")) {
+if (!($PubType -eq $null) -and $PubType.Contains("wpf")) {
     AutoPubWpf $AutoPubDirPath $ConfigFilePath | Out-File -FilePath $OutPutFilePath
 }
+
+#AutoPubApi D:\autopub config\pub-demo.config | Out-File -FilePath D:\autopub\log\demo-api-pub-log.txt
+#AutoPubWpf $AutoPubDirPath $ConfigFilePath | Out-File -FilePath $OutPutFilePath
