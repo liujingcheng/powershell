@@ -19,7 +19,7 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath,[str
     $tempSrcPath = $srcpath.Replace("\src", "\temp")
     $libPath = $libPath + "\*;" + $classpath;
     $firstSrcFile = $tempSrcPath + "\com\canyou\CanYouConfig.java";
-    javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $firstSrcFile | Out-File -FilePath $apiBuildLogPath
+    javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $firstSrcFile 
 
     $srcs = Get-ChildItem -Path $tempSrcPath -Recurse -Include *.java  | ForEach-Object {$_.FullName.Replace($tempSrcPath, "").Replace(".java", "")}
     $classes = Get-ChildItem -Path $classpath  -Recurse  -Include *.class -Exclude '*$*' | ForEach-Object {$_.FullName.Replace($classpath, "").Replace(".class", "")}
@@ -40,7 +40,7 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath,[str
                 $missedPaths.Add($dirPath)
                 $srcFilePath = $tempSrcPath + $dirPath + "\*.java"
                 $srcFilePath
-                javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $srcFilePath | Out-File -FilePath $apiBuildLogPath -Append
+                javac -encoding "UTF-8" -sourcepath $tempSrcPath -classpath $libPath -d $classpath  $srcFilePath 
             }
         }
     }
