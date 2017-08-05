@@ -25,9 +25,11 @@ Write-Host -ForegroundColor Red ("共耗时：" + ($end - $start).TotalMinutes)
 Write-Host '按任意键结束...' -NoNewline
 $null = [Console]::ReadKey('?')
 
-#D:\SourceCode\powershell\autopub.ps1 -AutoPubDirPath "D:\autopub" -ConfigFilePath "config\pub-test.config" -OutPutFilePath "D:\autopub\log\test-api-pub-log.txt" -PubType "api"
-#D:\SourceCode\powershell\autopub.ps1 -AutoPubDirPath "D:\autopub" -ConfigFilePath "config\pub-test.config" -OutPutFilePath "D:\autopub\log\test-wpf-pub-log.txt" -PubType "wpf"
+# D:\SourceCode\powershell\autopub.ps1 -AutoPubDirPath "D:\autopub" -ConfigFilePath "config\pub-preview.config" -OutPutFilePath "D:\autopub\log\preview-api-pub-log.txt" -PubType "api"
+# D:\SourceCode\powershell\autopub.ps1 -AutoPubDirPath "D:\autopub" -ConfigFilePath "config\pub-preview.config" -OutPutFilePath "D:\autopub\log\preview-wpf-pub-log.txt" -PubType "wpf"
 
+# D:\SourceCode\powershell\autopub.ps1 -AutoPubDirPath "D:\autopub" -ConfigFilePath "config\pub-test.config" -OutPutFilePath "D:\autopub\log\test-api-pub-log.txt" -PubType "api"
+# D:\SourceCode\powershell\autopub.ps1 -AutoPubDirPath "D:\autopub" -ConfigFilePath "config\pub-test.config" -OutPutFilePath "D:\autopub\log\test-wpf-pub-log.txt" -PubType "wpf"
 
-D:\SourceCode\powershell\autopub.ps1 -AutoPubDirPath "D:\autopub" -ConfigFilePath "config\pub-demo.config" -OutPutFilePath "D:\autopub\log\demo-api-pub-log.txt" -PubType "api"
-D:\SourceCode\powershell\autopub.ps1 -AutoPubDirPath "D:\autopub" -ConfigFilePath "config\pub-demo.config" -OutPutFilePath "D:\autopub\log\demo-wpf-pub-log.txt" -PubType "wpf"
+# D:\SourceCode\powershell\autopub.ps1 -AutoPubDirPath "D:\autopub" -ConfigFilePath "config\pub-demo.config" -OutPutFilePath "D:\autopub\log\demo-api-pub-log.txt" -PubType "api"
+# D:\SourceCode\powershell\autopub.ps1 -AutoPubDirPath "D:\autopub" -ConfigFilePath "config\pub-demo.config" -OutPutFilePath "D:\autopub\log\demo-wpf-pub-log.txt" -PubType "wpf"
