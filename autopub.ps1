@@ -166,7 +166,7 @@ Function AutoPubApi([string] $autoPubDirPath, [string] $configFileName) {
     Set-Location -Path $autoPubDirPath
     $configs = Get-Content -Path $configFileName
     GitPullApi $configs[4] $configs[5]
-    BuildApi $configs[1] $configs[0] $configs[2] $configs[3] | Out-File -FilePath $configs[3]
+    BuildApi $configs[1] $configs[0] $configs[2] $configs[3]
     PublishApi $configs[0] $configs[17] $configs[18] $configs[19]
     
     $endTime = Get-Date
