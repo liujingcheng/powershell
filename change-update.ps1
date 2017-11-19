@@ -1,0 +1,2 @@
+Copy-Item -Path D:\autopub\dev\App.xaml.cs D:\autopub\source\dev\shenlianerp_main\ShenLianERPSystem\ShenLianSystem\App.xaml.cs -Force
+Copy-Item -Path D:\autopub\dev\LoginWin.xaml.cs D:\autopub\source\dev\shenlianerp_main\ShenLianERPSystem\ShenLianSystem\LoginWin.xaml.cs -Force

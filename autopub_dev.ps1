@@ -183,6 +183,7 @@ Function AutoPubWpf([string] $autoPubDirPath, [string] $configFileName) {
     $configs = Get-Content -Path $configFileName
     GitPullWpf $configs[9] $configs[5]
     AddLicenses $configs[6] $configs[7] $configs[8]
+	D:\autopub\source\powershell\change-update.ps1
     BuildWpf $configs[10] $configs[11]
     PublishWpf  $configs[12] $configs[13] $configs[14] $configs[15] $configs[16] 
 
