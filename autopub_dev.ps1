@@ -80,7 +80,7 @@ Function AddLicenses($licensePath, $destPath1, $destPath2) {
 
 Function BuildWpf([string] $msBuildPath, [string] $slnPath) {
 
-    & $msBuildPath  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Release  /fl  "/flp:FileLogger,Microsoft.Build.Engine;apiBuildlogFile=Build.log;errorsonly;Encoding=UTF-8"
+    & $msBuildPath  $slnPath  /t:Rebuild  /M:8 /p:Configuration=Debug  /fl  "/flp:FileLogger,Microsoft.Build.Engine;apiBuildlogFile=Build.log;errorsonly;Encoding=UTF-8"
 }
 
 Function PublishApi([string] $localTargetPath, [string] $remoteTargetPath, [string] $computerName, [string] $serviceName) {
