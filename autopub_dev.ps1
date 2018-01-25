@@ -201,5 +201,5 @@ if (!($PubType -eq $null) -and $PubType.Contains("wpf")) {
 }
 
 #Clear-Host
-#AutoPubApi D:\autopub config\pub-preview.config | Out-File -FilePath D:\autopub\log\preview-api-pub-log.txt
+#AutoPubApi D:\autopub config\pub-dev.config | Out-File -FilePath D:\autopub\log\dev-api-pub-log.txt
 #AutoPubWpf $AutoPubDirPath $ConfigFilePath | Out-File -FilePath $OutPutFilePath
