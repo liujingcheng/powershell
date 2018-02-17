@@ -118,7 +118,7 @@ Function PublishWpf([string]  $wpfUpdateXmlExecPath, [string] $wpfLocalPath, [st
 
     :outer
     foreach ($localFile in $localFiles) {
-        $localFileSufix = $localFile.FullName.Replace($wpfLocalPath, "").Replace("OK.wav","ok.wav")
+        $localFileSufix = $localFile.FullName.Replace($wpfLocalPath, "").Replace("OK.wav","ok.wav")#临时解决小写ok.wav被自动转换成了大写OK.wav的问题（这会导致ftp下载时找不到文件），根本解决办法还未找到
         foreach ($excludeFileStr in $excludeFileStrs) {
             if ($localFileSufix.Contains($excludeFileStr)) {
                 continue outer
