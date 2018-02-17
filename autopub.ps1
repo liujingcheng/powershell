@@ -118,7 +118,7 @@ Function PublishWpf([string]  $wpfUpdateXmlExecPath, [string] $wpfLocalPath, [st
 
     :outer
     foreach ($localFile in $localFiles) {
-        $localFileSufix = $localFile.FullName.Replace($wpfLocalPath, "")
+        $localFileSufix = $localFile.FullName.Replace($wpfLocalPath, "").Replace("OK.wav","ok.wav")
         foreach ($excludeFileStr in $excludeFileStrs) {
             if ($localFileSufix.Contains($excludeFileStr)) {
                 continue outer
