@@ -21,7 +21,7 @@ Function BuildApi([string] $srcpath, [string] $classpath, [string] $libPath,[str
 
     Copy-Item -Path $srcpath.Replace("\src", "\conf\bpmn")  $classpath -Recurse -Force
 
-    D:\autopub\rm-utf-bom\RemoveUtfBom.exe $srcpath #去BOM头
+    C:\canyou\autopub\rm-utf-bom\RemoveUtfBom.exe $srcpath #去BOM头
 
     $tempSrcPath = $srcpath.Replace("\src", "\temp")
     $libPath = $libPath + "\*;" + $classpath;
@@ -209,5 +209,5 @@ if (!($PubType -eq $null) -and $PubType.Contains("wpf")) {
 }
 
 #Clear-Host
-#AutoPubApi D:\autopub config\pub-preview.config | Out-File -FilePath D:\autopub\log\preview-api-pub-log.txt
+#AutoPubApi D:\autopub config\pub-preview.config | Out-File -FilePath C:\canyou\autopub\log\preview-api-pub-log.txt
 #AutoPubWpf $AutoPubDirPath $ConfigFilePath | Out-File -FilePath $OutPutFilePath
