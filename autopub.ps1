@@ -1,6 +1,13 @@
 ﻿
 param($AutoPubDirPath, $ConfigFilePath, $OutPutFilePath, $PubType)
 
+function MakeGitTag () {
+    $now = Get-Date -Format "yyyyMMddHHmmss"
+    $tagname = "R" + $now.ToString()
+    git tag -a $tagname -m "publish"
+    git push origin $tagname
+}
+
 Function RemoveApiTarget([string] $classpath) {
     $targetDirs = Get-ChildItem -Path $classpath -Directory
     foreach ($dir in $targetDirs) {
@@ -63,6 +70,7 @@ Function GitPullApi([string] $apiGitPath, [string] $gitBranch) {
     git reset --hard head
     git fetch origin $gitBranch
     git checkout  $originBranch
+    MakeGitTag
 }
 Function GitPullWpf([string] $wpfGitPath, [string] $gitBranch) {
     $originBranch = "origin/" + $gitBranch
@@ -70,6 +78,7 @@ Function GitPullWpf([string] $wpfGitPath, [string] $gitBranch) {
     git reset --hard head
     git fetch origin $gitBranch
     git checkout  $originBranch
+    MakeGitTag
 }
 
 Function AddLicenses($licensePath, $destPath1, $destPath2) {
